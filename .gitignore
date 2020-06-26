@@ -1,0 +1,9 @@
+# npm
+/node_modules
+
+# Workspace
+/notes
+*.txt
+
+# macOS
+.DS_STORE
