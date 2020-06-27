@@ -1,6 +1,7 @@
-.idea/
-.vscode/
+coverage/
+dist/
+.env/
+.eslintcache/
 node_modules/
-build/
 tmp/
 temp/
