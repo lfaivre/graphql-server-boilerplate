@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: development-db
+    volumes:
+      - development-db-data:/var/lib/postgresql/data
+  server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.dev
+    depends_on:
+      - db
+    image: lorenzofaivre/graphql-server-boilerplate/server:latest
+    ports:
+      - '4000:4000'
+    volumes:
+      - .:/server
+      - /server/node_modules
+    restart: always
+volumes:
+  development-db-data:

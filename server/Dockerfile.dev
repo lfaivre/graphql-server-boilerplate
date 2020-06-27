@@ -1,0 +1,14 @@
+FROM node:12.18.1
+ENV NODE_ENV=development
+
+WORKDIR /server
+
+COPY package*.json /server/
+RUN npm install
+
+COPY . /server
+
+RUN chmod +x /server/deploy/wait-for-it.sh /server/deploy/dev.sh
+
+EXPOSE 4000
+CMD ["/server/deploy/dev.sh"]
