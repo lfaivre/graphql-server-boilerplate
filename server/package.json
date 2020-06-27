@@ -8,11 +8,12 @@
     "pg": "^8.2.1"
   },
   "devDependencies": {
-    "ts-node": "8.10.2",
     "@types/node": "^14.0.14",
+    "ts-node": "8.10.2",
+    "ts-node-dev": "^1.0.0-pre.49",
     "typescript": "3.9.5"
   },
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node-dev --respawn src/index.ts"
   }
 }
