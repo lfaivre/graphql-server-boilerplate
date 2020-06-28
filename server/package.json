@@ -3,9 +3,10 @@
   "version": "0.0.1",
   "description": "",
   "dependencies": {
-    "typeorm": "0.2.25",
+    "graphql-yoga": "^1.18.3",
+    "pg": "^8.2.1",
     "reflect-metadata": "^0.1.13",
-    "pg": "^8.2.1"
+    "typeorm": "0.2.25"
   },
   "devDependencies": {
     "@types/node": "^14.0.14",
