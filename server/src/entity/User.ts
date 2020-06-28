@@ -1,16 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryColumn, Column, BeforeInsert, BaseEntity } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
-export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+// eslint-disable-next-line import/prefer-default-export
+export class User extends BaseEntity {
+  @PrimaryColumn('uuid') id: string;
 
-  @Column()
-  firstName: string;
+  @Column('varchar', { length: 255 }) email: string;
 
-  @Column()
-  lastName: string;
+  @Column('text') password: string;
 
-  @Column()
-  age: number;
+  @BeforeInsert()
+  addId(): void {
+    this.id = uuidv4();
+  }
 }

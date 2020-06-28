@@ -1,17 +1,19 @@
 import 'reflect-metadata';
 import { GraphQLServer } from 'graphql-yoga';
+import { loadSchemaSync } from '@graphql-tools/load';
+import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
+// import { addResolversToSchema } from '@graphql-tools/schema';
+import { join } from 'path';
+import {resolvers} from  './resolvers'
+ 
+const schema = loadSchemaSync(join(__dirname, 'schema.graphql'), {
+  loaders: [new GraphQLFileLoader()],
+});
 
-const typeDefs = `
-  type Query {
-    hello(name: String): String!
-  }
-`;
+// const schemaWithResolvers = addResolversToSchema({
+//   schema,
+//   resolvers,
+// });
 
-const resolvers = {
-  Query: {
-    hello: (_: any, { name }: any) => `Hello ${name || 'World'}`,
-  },
-};
-
-const server = new GraphQLServer({ typeDefs, resolvers });
+const server = new GraphQLServer({ schema, resolvers });
 server.start(() => console.log('Server is running on localhost:4000'));
