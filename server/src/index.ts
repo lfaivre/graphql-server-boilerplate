@@ -16,7 +16,12 @@ const schemaWithResolvers = addResolversToSchema({
   resolvers,
 });
 
-const server = new GraphQLServer({ schema: schemaWithResolvers });
-createConnection().then(() => {
-  server.start(() => console.log('Server is running on localhost:4000'));
-});
+// eslint-disable-next-line import/prefer-default-export
+export const startServer = async (): Promise<void> => {
+  const server = new GraphQLServer({ schema: schemaWithResolvers });
+  await createConnection();
+  await server.start();
+  console.log('Server is running on localhost:4000');
+};
+
+startServer();
