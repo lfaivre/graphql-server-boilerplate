@@ -23,16 +23,11 @@
     "typescript": "3.9.5"
   },
   "scripts": {
-    "start": "ts-node-dev --respawn src/index.ts",
+    "start:dev": "ts-node-dev --no-deps --respawn --poll --transpileOnly ./src/index.ts",
     "typecheck": "tsc --noEmit",
     "typecheck--watch": "npm run typecheck -- --watch",
     "prettier:base": "prettier --parser typescript --single-quote",
     "prettier:check": "npm run prettier:base -- --list-different \"src/**/*.{js,jsx,ts,tsx}\"",
     "prettier:write": "npm run prettier:base -- --write \"src/**/*.{js,jsx,ts,tsx}\""
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run prettier:write"
-    }
   }
 }
