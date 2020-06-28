@@ -1,4 +1,6 @@
-import { ResolverMap } from "./types/graphql-utils";
+import * as bcrypt from 'bcryptjs';
+import { ResolverMap } from './types/graphql-utils';
+import { User } from './entity/User';
 
 // eslint-disable-next-line import/prefer-default-export
 export const resolvers: ResolverMap = {
@@ -6,6 +8,14 @@ export const resolvers: ResolverMap = {
     hello: (_: any, { name }: GQL.IHelloOnQueryArguments) => `Hello ${name || 'World'}`,
   },
   Mutation: {
-    register: (_: any, {email, password}: GQL.IRegisterOnMutationArguments) => {}
-  }
+    register: async (_: any, { email, password }: GQL.IRegisterOnMutationArguments) => {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = User.create({
+        email,
+        password: hashedPassword,
+      });
+      await user.save();
+      return true;
+    },
+  },
 };

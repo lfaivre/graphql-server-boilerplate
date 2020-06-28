@@ -1,7 +1,7 @@
 import { Entity, PrimaryColumn, Column, BeforeInsert, BaseEntity } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-@Entity()
+@Entity("users")
 // eslint-disable-next-line import/prefer-default-export
 export class User extends BaseEntity {
   @PrimaryColumn('uuid') id: string;
