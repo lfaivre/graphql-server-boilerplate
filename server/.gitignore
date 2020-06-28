@@ -1,7 +1,1 @@
-coverage/
-dist/
-.env/
-.eslintcache/
-node_modules/
-tmp/
-temp/
+/.env

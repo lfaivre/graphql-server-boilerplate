@@ -1,0 +1,39 @@
+# BASE
+FROM node:12.18.1-alpine AS BASE
+ENV DOCKERIZE_VERSION v0.6.1
+ENV PORT 3002
+RUN apk add --no-cache openssl
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+  && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+  && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+
+# DEPENDENCIES
+FROM BASE AS DEPENDENCIES
+ENV NODE_ENV development
+WORKDIR /gateway
+COPY package*.json ./
+RUN npm set progress=false && npm config set depth 0
+RUN npm install
+
+# BUILD
+FROM DEPENDENCIES AS BUILD
+ENV NODE_ENV development
+WORKDIR /gateway
+COPY . .
+RUN npm run typecheck
+RUN npm run build 
+
+# PRODUCTION
+FROM BASE AS PRODUCTION
+ENV NODE_ENV test
+WORKDIR /gateway
+COPY package*.json ./
+RUN npm set progress=false && npm config set depth 0
+RUN npm install --only=production
+COPY --from=BUILD /gateway/dist ./dist
+COPY ./src/schema ./dist/schema
+COPY ormconfig.json jest.config.js ./
+
+EXPOSE 3002
+
+CMD dockerize -wait tcp://gateway-db-test:5432 -timeout 60m npm run start:test

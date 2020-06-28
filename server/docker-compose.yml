@@ -1,28 +1,69 @@
 version: '3.8'
 
 services:
-  db:
+  gateway-dev:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - gateway-db-dev
+    image: lorenzofaivre/project-boilerplate/gateway-dev:latest
+    restart: always
+    ports:
+      - 4000:4000
+    volumes:
+      - ./gateway:/gateway
+      - ./gateway/dist:/gateway/dist
+      - ./gateway/node_modules:/gateway/node_modules
+  gateway-db-dev:
     image: postgres
     restart: always
+    ports:
+      - 5434:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: development-db
+      POSTGRES_DB: gateway-db-dev
     volumes:
-      - development-db-data:/var/lib/postgresql/data
-  server:
+      - gateway-db-data-dev:/var/lib/postgresql/data
+
+  gateway-test:
     build:
-      context: .
-      dockerfile: ./Dockerfile.dev
+      context: ./gateway
+      dockerfile: Dockerfile.test
     depends_on:
-      - db
-    image: lorenzofaivre/graphql-server-boilerplate/server:latest
+      - gateway-db-test
+    image: lorenzofaivre/project-boilerplate/gateway-test:latest
     restart: always
     ports:
-      - '4000:4000'
+      - 3002:3002
+  gateway-db-test:
+    image: postgres
+    restart: always
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gateway-db-test
     volumes:
-      - .:/server
-      - /server/dist
-      - /server/node_modules
+      - gateway-db-data-test:/var/lib/postgresql/data
+
+  tests:
+    build:
+      context: ./tests
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - gateway-test
+    image: lorenzofaivre/project-boilerplate/tests:latest
+    restart: always
+    ports:
+      - 8000:8000
+    volumes:
+      - ./tests:/tests
+      - ./tests/dist:/tests/dist
+      - ./tests/node_modules:/tests/node_modules
+
 volumes:
-  development-db-data:
+  gateway-db-data-dev:
+  gateway-db-data-test:

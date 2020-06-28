@@ -1,0 +1,27 @@
+# BASE
+FROM node:12.18.1-alpine AS BASE
+ENV DOCKERIZE_VERSION v0.6.1
+ENV PORT 8000
+RUN apk add --no-cache openssl
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+  && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+  && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+
+# DEPENDENCIES
+FROM BASE AS DEPENDENCIES
+ENV NODE_ENV development
+WORKDIR /gateway
+COPY package*.json ./
+RUN npm set progress=false && npm config set depth 0
+RUN npm install
+
+# PRODUCTION
+FROM BASE AS PRODUCTION
+ENV NODE_ENV development
+WORKDIR /gateway
+COPY --from=DEPENDENCIES /gateway/node_modules ./node_modules
+COPY . .
+
+EXPOSE 8000
+
+CMD dockerize -wait tcp://host.docker.internal:3002 -timeout 60m npm run start

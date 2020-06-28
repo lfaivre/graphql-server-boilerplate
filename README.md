@@ -1,3 +1,11 @@
-# GraphQL Server Boilerplate
+# About
 
-This server boilerplate uses Node.js, GraphQL, and TypeScript. Original code was inspired by Ben Awad's [YouTube series](https://www.youtube.com/playlist?list=PLN3n1USn4xlltIGRInnlHtsOdvHIUQFHL).
+TODO
+
+# Server
+
+See [README](https://github.com/lfaivre/graphql-server-boilerplate/blob/master/server/README.md)
+
+# Client
+
+TODO
