@@ -20,10 +20,11 @@
     "typescript": "^3.9.5"
   },
   "scripts": {
-    "start": "npx jest --detectOpenHandles",
-    "dc:start": "docker-compose up -d tests",
+    "start": "npx jest --detectOpenHandles && exit 0",
+    "dc:start": "docker-compose up -d tests && npm run dc:logs",
     "dc:down": "docker-compose down -v",
     "dc:rmi": "docker rmi -f lorenzofaivre/project-boilerplate/tests",
-    "dc:reset": "npm run dc:down && npm run dc:rmi && npm run dc:start"
+    "dc:reset": "npm run dc:down && npm run dc:rmi && npm run dc:start",
+    "dc:logs": "docker-compose logs -f tests"
   }
 }

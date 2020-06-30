@@ -31,7 +31,7 @@ COPY package*.json ./
 RUN npm set progress=false && npm config set depth 0
 RUN npm install --only=production
 COPY --from=BUILD /gateway/dist ./dist
-COPY ./src/schema ./dist/schema
+# COPY ./src/schema ./dist/schema
 COPY ormconfig.json jest.config.js ./
 
 EXPOSE 3002

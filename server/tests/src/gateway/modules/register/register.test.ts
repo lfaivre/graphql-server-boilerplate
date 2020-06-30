@@ -1,5 +1,5 @@
 import { request } from 'graphql-request';
-import { host } from '../setup/constants';
+import { host } from '../../../setup/constants';
 
 const email = 'test@test.com';
 const password = 'test';
