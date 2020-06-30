@@ -7,20 +7,28 @@ import { loadSchemaSync } from '@graphql-tools/load';
 import { addResolversToSchema } from '@graphql-tools/schema';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
 
+const moduleDirs = ['modules'];
 const schemasArray: GraphQLSchema[] = [];
 
-const folders = readdirSync(join(__dirname, './modules'));
-folders.forEach((folder) => {
-  // eslint-disable-next-line max-len
-  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require, import/no-dynamic-require
-  const resolversArray = loadFilesSync(join(__dirname, `./modules/${folder}/resolvers.*`), {
-    extensions: ['.ts', '.js'],
+console.log(`process.env.NODE_ENV: ${process.env.NODE_ENV}`);
+if (process.env.NODE_ENV !== 'production') {
+  moduleDirs.push('modules__test');
+}
+
+moduleDirs.forEach((moduleDir) => {
+  const folders = readdirSync(join(__dirname, `./${moduleDir}`));
+  folders.forEach((folder) => {
+    // eslint-disable-next-line max-len
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require, import/no-dynamic-require
+    const resolversArray = loadFilesSync(join(__dirname, `./${moduleDir}/${folder}/resolvers.*`), {
+      extensions: ['.ts', '.js'],
+    });
+    const resolvers = mergeResolvers(resolversArray);
+    const schema = loadSchemaSync(join(__dirname, `./${moduleDir}/${folder}/schema.graphql`), {
+      loaders: [new GraphQLFileLoader()],
+    });
+    schemasArray.push(addResolversToSchema({ schema, resolvers }));
   });
-  const resolvers = mergeResolvers(resolversArray);
-  const schema = loadSchemaSync(join(__dirname, `./modules/${folder}/schema.graphql`), {
-    loaders: [new GraphQLFileLoader()],
-  });
-  schemasArray.push(addResolversToSchema({ schema, resolvers }));
 });
 
 export const schemas = mergeSchemas({ schemas: schemasArray });
