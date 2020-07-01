@@ -1,7 +1,7 @@
 import { ApolloServer } from 'apollo-server';
 import { createTypeORMConnection } from './utils/db-connection';
 import { schemas } from './merge-schema';
-import { warning } from './errors/global';
+import { warning } from './utils/warnings';
 import { DEFAULT_PORT } from './constants';
 
 const port = process.env.PORT || DEFAULT_PORT;

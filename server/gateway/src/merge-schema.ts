@@ -10,7 +10,6 @@ import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
 const moduleDirs = ['modules'];
 const schemasArray: GraphQLSchema[] = [];
 
-console.log(`process.env.NODE_ENV: ${process.env.NODE_ENV}`);
 if (process.env.NODE_ENV !== 'production') {
   moduleDirs.push('modules__test');
 }
@@ -18,8 +17,7 @@ if (process.env.NODE_ENV !== 'production') {
 moduleDirs.forEach((moduleDir) => {
   const folders = readdirSync(join(__dirname, `./${moduleDir}`));
   folders.forEach((folder) => {
-    // eslint-disable-next-line max-len
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require, import/no-dynamic-require
+    // eslint-disable-next-line
     const resolversArray = loadFilesSync(join(__dirname, `./${moduleDir}/${folder}/resolvers.*`), {
       extensions: ['.ts', '.js'],
     });

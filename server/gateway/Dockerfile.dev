@@ -10,8 +10,9 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 # DEPENDENCIES
 FROM BASE AS DEPENDENCIES
 ENV NODE_ENV development
+
 WORKDIR /gateway
-COPY package*.json ./
+COPY ./gateway/package*.json ./
 RUN npm set progress=false && npm config set depth 0
 RUN npm install
 
@@ -20,7 +21,7 @@ FROM BASE AS PRODUCTION
 ENV NODE_ENV development
 WORKDIR /gateway
 COPY --from=DEPENDENCIES /gateway/node_modules ./node_modules
-COPY . .
+COPY ./gateway .
 
 EXPOSE 4000
 

@@ -3,8 +3,8 @@ version: '3.8'
 services:
   gateway-dev:
     build:
-      context: ./gateway
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: ./gateway/Dockerfile.dev
     depends_on:
       - gateway-db-dev
     image: lorenzofaivre/project-boilerplate/gateway-dev:latest
@@ -29,8 +29,8 @@ services:
 
   gateway-test:
     build:
-      context: ./gateway
-      dockerfile: Dockerfile.test
+      context: .
+      dockerfile: ./gateway/Dockerfile.test
     depends_on:
       - gateway-db-test
     image: lorenzofaivre/project-boilerplate/gateway-test:latest
@@ -51,8 +51,8 @@ services:
 
   tests:
     build:
-      context: ./tests
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: ./tests/Dockerfile.dev
     depends_on:
       - gateway-test
     image: lorenzofaivre/project-boilerplate/tests:latest
@@ -61,8 +61,10 @@ services:
       - 8000:8000
     volumes:
       - ./tests:/tests
-      - ./tests/dist:/tests/dist
       - ./tests/node_modules:/tests/node_modules
+    environment:
+      - GATEWAY_TEST_HOST=host.docker.internal
+      - GATEWAY_TEST_PORT=3002
 
 volumes:
   gateway-db-data-dev:

@@ -11,7 +11,7 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 FROM BASE AS DEPENDENCIES
 ENV NODE_ENV development
 WORKDIR /gateway
-COPY package*.json ./
+COPY ./gateway/package*.json ./
 RUN npm set progress=false && npm config set depth 0
 RUN npm install
 
@@ -19,20 +19,19 @@ RUN npm install
 FROM DEPENDENCIES AS BUILD
 ENV NODE_ENV development
 WORKDIR /gateway
-COPY . .
+COPY ./gateway .
 RUN npm run typecheck
-RUN npm run build 
+RUN npm run build
 
 # PRODUCTION
 FROM BASE AS PRODUCTION
 ENV NODE_ENV test
-WORKDIR /gateway
-COPY package*.json ./
+WORKDIR /gateway/dist
+COPY ./gateway/package*.json ./
 RUN npm set progress=false && npm config set depth 0
 RUN npm install --only=production
-COPY --from=BUILD /gateway/dist ./dist
-# COPY ./src/schema ./dist/schema
-COPY ormconfig.json jest.config.js ./
+COPY --from=BUILD /gateway/dist ./
+COPY ./gateway/ormconfig.json ./
 
 EXPOSE 3002
 
