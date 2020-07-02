@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcryptjs';
 import * as yup from 'yup';
+import { Redis } from 'ioredis';
 import { ResolverMap } from '../../types/graphql-utils';
 import { User } from '../../entity/User';
 import { formatYupError } from '../../utils/format-yup-error';
@@ -8,6 +9,7 @@ import {
   ERRORS,
   YUP_ERROR_MESSAGES as YEM,
 } from '../../../shared/src/gateway/constants/module-register-errors';
+import { createConfirmEmailLink } from '../../utils/confirmation';
 
 const schema = yup.object().shape({
   email: yup
@@ -21,8 +23,10 @@ const schema = yup.object().shape({
 export const resolvers: ResolverMap = {
   Mutation: {
     register: async (
+      // eslint-disable-next-line
       _: any,
-      args: GQL.IRegisterOnMutationArguments
+      args: GQL.IRegisterOnMutationArguments,
+      context: { redis: Redis }
     ): Promise<null | SchemaError[]> => {
       const { email, password } = args;
       try {
@@ -30,7 +34,10 @@ export const resolvers: ResolverMap = {
       } catch (e) {
         return formatYupError(e);
       }
-      const userAlreadyExists = await User.findOne({ where: { email }, select: ['id'] });
+      const userAlreadyExists = await User.findOne({
+        where: { email },
+        select: ['id'],
+      });
       if (userAlreadyExists) {
         return [ERRORS.EMAIL_TAKEN];
       }
@@ -40,8 +47,11 @@ export const resolvers: ResolverMap = {
         password: hashedPassword,
       });
       await user.save().catch((e) => {
+        // TODO :: Create and return error
         console.log(`ERROR SAVING TO DATABASE: ${e}`);
       });
+      const link = await createConfirmEmailLink(user.id, context.redis);
+      console.log(`CONFIRMATION LINK CREATED: ${link}`);
       return null;
     },
   },

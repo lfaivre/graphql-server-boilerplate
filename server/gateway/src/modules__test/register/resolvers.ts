@@ -6,7 +6,9 @@ import { ERRORS } from '../../../shared/src/gateway/constants/module-register-er
 export const resolvers: ResolverMap = {
   Mutation: {
     TEST_verifySuccessfulRegistration: async (
+      // eslint-disable-next-line
       _: any,
+      // eslint-disable-next-line
       { email, password }: any
     ): Promise<null | SchemaError[]> => {
       const users = await User.find({ where: { email } });

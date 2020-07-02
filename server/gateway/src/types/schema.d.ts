@@ -1,4 +1,4 @@
-// tslint:disable
+/* eslint-disable */
 // graphql typescript definitions
 
 declare namespace GQL {
@@ -40,4 +40,4 @@ declare namespace GQL {
   }
 }
 
-// tslint:enable
+/* eslint-enable */

@@ -1,6 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Redis } from 'ioredis';
+
 export interface ResolverMap {
   [key: string]: {
-    // eslint-disable-next-line
-    [key: string]: (parent: any, args: any, context: any, info: any) => any;
+    [key: string]: (
+      parent: any,
+      args: any,
+      context: { redis: Redis; url: string },
+      info: any
+    ) => any;
   };
 }
