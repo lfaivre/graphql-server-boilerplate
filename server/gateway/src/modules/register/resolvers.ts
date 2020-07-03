@@ -10,6 +10,7 @@ import {
   YUP_ERROR_MESSAGES as YEM,
 } from '../../../shared/src/gateway/constants/module-register-errors';
 import { createConfirmEmailLink } from '../../utils/confirmation';
+import { sendEmail } from '../../utils/send-email';
 
 const schema = yup.object().shape({
   email: yup
@@ -51,6 +52,7 @@ export const resolvers: ResolverMap = {
         console.log(`ERROR SAVING TO DATABASE: ${e}`);
       });
       const link = await createConfirmEmailLink(user.id, context.redis);
+      await sendEmail(email, link);
       console.log(`CONFIRMATION LINK CREATED (USER ID: ${user.id}): ${link}`);
       return null;
     },
