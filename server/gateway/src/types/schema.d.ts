@@ -20,6 +20,43 @@ declare namespace GQL {
     column: number;
   }
 
+  interface IMutation {
+    __typename: 'Mutation';
+    register: Array<IError> | null;
+    TEST_verifySuccessfulRegistration: Array<IError> | null;
+    TEST_verifyCreateConfirmationLink: string;
+    TEST_verifyUserConfirmed: boolean;
+    TEST_verifyUserIDRemovedFromRedis: boolean | null;
+  }
+
+  interface IRegisterOnMutationArguments {
+    email: string;
+    password: string;
+  }
+
+  interface ITESTVerifySuccessfulRegistrationOnMutationArguments {
+    email: string;
+    password: string;
+  }
+
+  interface ITESTVerifyCreateConfirmationLinkOnMutationArguments {
+    email: string;
+  }
+
+  interface ITESTVerifyUserConfirmedOnMutationArguments {
+    email: string;
+  }
+
+  interface ITESTVerifyUserIDRemovedFromRedisOnMutationArguments {
+    id: string;
+  }
+
+  interface IError {
+    __typename: 'Error';
+    path: string;
+    message: string;
+  }
+
   interface IQuery {
     __typename: 'Query';
     hello: string;
@@ -27,16 +64,6 @@ declare namespace GQL {
 
   interface IHelloOnQueryArguments {
     name?: string | null;
-  }
-
-  interface IMutation {
-    __typename: 'Mutation';
-    register: boolean | null;
-  }
-
-  interface IRegisterOnMutationArguments {
-    email: string;
-    password: string;
   }
 }
 

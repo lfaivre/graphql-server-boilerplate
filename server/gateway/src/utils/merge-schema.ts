@@ -15,14 +15,14 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 moduleDirs.forEach((moduleDir) => {
-  const folders = readdirSync(join(__dirname, `./${moduleDir}`));
+  const folders = readdirSync(join(__dirname, `../${moduleDir}`));
   folders.forEach((folder) => {
     // eslint-disable-next-line
-    const resolversArray = loadFilesSync(join(__dirname, `./${moduleDir}/${folder}/resolvers.*`), {
+    const resolversArray = loadFilesSync(join(__dirname, `../${moduleDir}/${folder}/resolvers.*`), {
       extensions: ['.ts', '.js'],
     });
     const resolvers = mergeResolvers(resolversArray);
-    const schema = loadSchemaSync(join(__dirname, `./${moduleDir}/${folder}/schema.graphql`), {
+    const schema = loadSchemaSync(join(__dirname, `../${moduleDir}/${folder}/schema.graphql`), {
       loaders: [new GraphQLFileLoader()],
     });
     schemasArray.push(addResolversToSchema({ schema, resolvers }));

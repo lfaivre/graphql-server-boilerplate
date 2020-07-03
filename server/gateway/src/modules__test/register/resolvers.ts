@@ -11,9 +11,9 @@ export const resolvers: ResolverMap = {
     TEST_verifySuccessfulRegistration: async (
       // eslint-disable-next-line
       _: any,
-      // eslint-disable-next-line
-      { email, password }: any
+      args: GQL.ITESTVerifySuccessfulRegistrationOnMutationArguments
     ): Promise<null | SchemaError[]> => {
+      const { email, password } = args;
       const users = await User.find({ where: { email } });
       if (users.length !== 1) {
         return [ERRORS.EMAIL_MULTIPLE_USERS];
@@ -33,10 +33,10 @@ export const resolvers: ResolverMap = {
     TEST_verifyCreateConfirmationLink: async (
       // eslint-disable-next-line
       _: any,
-      // eslint-disable-next-line
-      { email }: any,
+      args: GQL.ITESTVerifyCreateConfirmationLinkOnMutationArguments,
       context: { redis: Redis }
     ): Promise<string | null> => {
+      const { email } = args;
       const user = await User.findOne({
         where: { email },
         select: ['id'],
@@ -50,9 +50,9 @@ export const resolvers: ResolverMap = {
     TEST_verifyUserConfirmed: async (
       // eslint-disable-next-line
       _: any,
-      // eslint-disable-next-line
-      { email }: any
+      args: GQL.ITESTVerifyUserConfirmedOnMutationArguments
     ): Promise<boolean | null> => {
+      const { email } = args;
       const user = await User.findOne({ where: { email }, select: ['confirmed'] });
       if (!user) {
         return null;
@@ -62,10 +62,10 @@ export const resolvers: ResolverMap = {
     TEST_verifyUserIDRemovedFromRedis: async (
       // eslint-disable-next-line
       _: any,
-      // eslint-disable-next-line
-      { id }: any,
+      args: GQL.ITESTVerifyUserIDRemovedFromRedisOnMutationArguments,
       context: { redis: Redis }
     ): Promise<boolean> => {
+      const { id } = args;
       const value = await context.redis.get(id);
       return value === null;
     },

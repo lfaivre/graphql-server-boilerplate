@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "",
   "dependencies": {
+    "@gql2ts/from-schema": "^2.0.0-4",
     "@graphql-tools/graphql-file-loader": "^6.0.11",
     "@graphql-tools/load": "^6.0.11",
     "@graphql-tools/load-files": "^6.0.11",
@@ -11,6 +12,7 @@
     "apollo-server-express": "^2.15.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "graphql": "^15.2.0",
     "ioredis": "^4.17.3",
@@ -21,6 +23,7 @@
     "yup": "^0.29.1"
   },
   "devDependencies": {
+    "@gql2ts/types": "^1.9.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/ioredis": "^4.17.0",
     "@types/node": "^14.0.14",
@@ -34,7 +37,6 @@
     "eslint-config-airbnb-typescript": "^8.0.2",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.22.0",
-    "gql2ts": "^1.10.1",
     "graphql-config": "^3.0.2",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
@@ -53,7 +55,7 @@
     "lint:dev": "eslint --ext .ts ./",
     "prettier:base": "prettier --parser typescript",
     "prettier:write": "npm run prettier:base -- --write \"./src/**/*.ts\"",
-    "gen-schema-types": "gql2ts ./src/schema.graphql -o ./src/types/schema.d.ts",
+    "gen-schema-types": "ts-node ./src/scripts/create-types.ts",
     "dc:pre-start": "npm run temp:install-shared",
     "dc:start-dev": "npm run dc:pre-start && docker-compose up -d gateway-dev",
     "dc:start-test": "npm run dc:pre-start && docker-compose up -d gateway-test",
