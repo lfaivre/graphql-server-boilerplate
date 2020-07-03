@@ -22,11 +22,17 @@ declare namespace GQL {
 
   interface IMutation {
     __typename: 'Mutation';
+    login: Array<IError> | null;
     register: Array<IError> | null;
     TEST_verifySuccessfulRegistration: Array<IError> | null;
     TEST_verifyCreateConfirmationLink: string;
     TEST_verifyUserConfirmed: boolean;
     TEST_verifyUserIDRemovedFromRedis: boolean | null;
+  }
+
+  interface ILoginOnMutationArguments {
+    email: string;
+    password: string;
   }
 
   interface IRegisterOnMutationArguments {

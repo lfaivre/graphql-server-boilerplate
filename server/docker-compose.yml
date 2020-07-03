@@ -79,18 +79,16 @@ services:
       context: .
       dockerfile: ./tests/Dockerfile.dev
     depends_on:
-      - gateway-test
+      - gateway-dev
     image: lorenzofaivre/project-boilerplate/tests:latest
     restart: on-failure
-    ports:
-      - 8000:8000
     volumes:
       - ./tests:/tests
       - ./tests/node_modules:/tests/node_modules
     environment:
-      - GATEWAY_TEST_HOST=gateway-test
+      - GATEWAY_TEST_HOST=gateway-dev
       - GATEWAY_TEST_HOST_EXT=0.0.0.0
-      - GATEWAY_TEST_PORT=3002
+      - GATEWAY_TEST_PORT=4000
 
 volumes:
   gateway-db-data-dev:

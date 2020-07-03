@@ -23,7 +23,7 @@ describe('confirmation link', () => {
   test('user receives a confirmation link after registering', async () => {
     const mutation = TEST_verifyCreateConfirmationLink(email);
     const response = await request(host, mutation);
-    expect(response).not.toEqual({ register: null });
+    expect(response).not.toEqual({ TEST_verifyCreateConfirmationLink: null });
     link = response.TEST_verifyCreateConfirmationLink;
   });
 

@@ -9,7 +9,7 @@ if (!apiKey) {
 const client = new SparkPost(apiKey);
 
 export const sendEmail = async (recipient: string, url: string): Promise<void> => {
-  if (process.env.NODE_ENV !== 'test') {
+  if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
     const response = await client.transmissions.send({
       options: {
         sandbox: true,

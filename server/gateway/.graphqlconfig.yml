@@ -1,4 +1,1 @@
-projects:
-  server:
-    schema: ./src/**/*.graphql
-    includes: ['./src/**/*.graphql']
+schema: http://0.0.0.0:4000/graphql
