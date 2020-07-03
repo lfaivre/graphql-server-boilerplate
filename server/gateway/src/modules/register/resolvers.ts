@@ -51,7 +51,7 @@ export const resolvers: ResolverMap = {
         console.log(`ERROR SAVING TO DATABASE: ${e}`);
       });
       const link = await createConfirmEmailLink(user.id, context.redis);
-      console.log(`CONFIRMATION LINK CREATED: ${link}`);
+      console.log(`CONFIRMATION LINK CREATED (USER ID: ${user.id}): ${link}`);
       return null;
     },
   },

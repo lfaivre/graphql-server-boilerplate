@@ -20,6 +20,8 @@ services:
       - GATEWAY_DEV_HOST=gateway-dev
       - GATEWAY_DEV_HOST_EXT=0.0.0.0
       - GATEWAY_DEV_PORT=4000
+      - GATEWAY_DEV_REDIS_HOST=gateway-redis-dev
+      - GATEWAY_DEV_REDIS_PORT=6379
   gateway-db-dev:
     image: postgres
     restart: always
@@ -43,10 +45,17 @@ services:
       dockerfile: ./gateway/Dockerfile.test
     depends_on:
       - gateway-db-test
+      - gateway-redis-test
     image: lorenzofaivre/project-boilerplate/gateway-test:latest
     restart: always
     ports:
-      - 3002:3002
+      - 0.0.0.0:3002:3002
+    environment:
+      - GATEWAY_DEV_HOST=gateway-test
+      - GATEWAY_DEV_HOST_EXT=0.0.0.0
+      - GATEWAY_DEV_PORT=3002
+      - GATEWAY_DEV_REDIS_HOST=gateway-redis-test
+      - GATEWAY_DEV_REDIS_PORT=6379
   gateway-db-test:
     image: postgres
     restart: always
@@ -58,6 +67,11 @@ services:
       POSTGRES_DB: gateway-db-test
     volumes:
       - gateway-db-data-test:/var/lib/postgresql/data
+  gateway-redis-test:
+    image: redis:6.0.5-alpine
+    restart: always
+    ports:
+      - 6379:6379
 
   tests:
     build:
@@ -73,7 +87,8 @@ services:
       - ./tests:/tests
       - ./tests/node_modules:/tests/node_modules
     environment:
-      - GATEWAY_TEST_HOST=host.docker.internal
+      - GATEWAY_TEST_HOST=gateway-test
+      - GATEWAY_TEST_HOST_EXT=0.0.0.0
       - GATEWAY_TEST_PORT=3002
 
 volumes:

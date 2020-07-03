@@ -3,3 +3,15 @@
 type Mutation {
   TEST_verifySuccessfulRegistration(email: String!, password: String!): [Error!]
 }
+
+type Mutation {
+  TEST_verifyCreateConfirmationLink(email: String!): String!
+}
+
+type Mutation {
+  TEST_verifyUserConfirmed(email: String!): Boolean!
+}
+
+type Mutation {
+  TEST_verifyUserIDRemovedFromRedis(id: String!): Boolean
+}
