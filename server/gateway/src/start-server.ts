@@ -1,6 +1,8 @@
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
+import session from 'express-session';
+import RedisStore from 'connect-redis';
 import { createTypeORMConnection } from './utils/db-connection';
 import { redis } from './redis';
 import { schemas } from './utils/merge-schema';
@@ -8,10 +10,15 @@ import { warning } from './utils/warnings';
 import { DEFAULT_HOST, DEFAULT_PORT } from './constants';
 import { confirmEmail } from './routes/confirm-email';
 
-// TODO :: Pull host and port data from environment variables
-const host = process.env.GATEWAY_DEV_HOST || DEFAULT_HOST;
-if (!process.env.GATEWAY_DEV_HOST) {
+// TODO :: Move these initializations to a separate file with an export
+const hostExternal = process.env.GATEWAY_DEV_HOST_EXT || DEFAULT_HOST;
+if (!process.env.GATEWAY_DEV_HOST_EXT) {
   warning('HOST', { host: DEFAULT_HOST });
+}
+
+const host = process.env.GATEWAY_DEV_HOST || 'gateway-dev';
+if (!process.env.GATEWAY_DEV_HOST) {
+  console.log('NO GATEWAY_DEV_HOST ENVIRONMENT VARIABLE AVAILABLE');
 }
 
 const port = process.env.GATEWAY_DEV_PORT || DEFAULT_PORT;
@@ -19,20 +26,50 @@ if (!process.env.GATEWAY_DEV_PORT) {
   warning('PORT', { port: DEFAULT_PORT });
 }
 
+const SESSION_SECRET = process.env.SESSION_SECRET || undefined;
+if (!process.env.SESSION_SECRET) {
+  console.log('NO SESSION_SECRET ENVIRONMENT VARIABLE AVAILABLE');
+}
+
 export const startServer = async (): Promise<void> => {
   await createTypeORMConnection();
   const server = new ApolloServer({
     schema: schemas,
-    context: { redis },
+    context: ({ req }) => ({ redis, session: req.session }),
   });
 
   const app = express();
-  app.use(cors());
+
+  const corsOptions: CorsOptions = {
+    origin: [`http://${hostExternal}:${port}`, `http://${host}:${port}`],
+    optionsSuccessStatus: 200,
+  };
+
+  app.use(cors(corsOptions));
+  const RedisStoreWithSession = RedisStore(session);
+
+  app.use(
+    session({
+      store: new RedisStoreWithSession({
+        client: redis,
+      }),
+      name: 'qid',
+      secret: SESSION_SECRET as string,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+      },
+    })
+  );
+
   server.applyMiddleware({ app });
 
   app.get('/confirm/:id', confirmEmail);
 
-  app.listen({ host, port }, () => {
-    console.log(`Server running at ${host}:${port}${server.graphqlPath}`);
+  app.listen({ hostExternal, port }, () => {
+    console.log(`Server running at ${hostExternal}:${port}${server.graphqlPath}`);
   });
 };

@@ -23,6 +23,7 @@ services:
       - GATEWAY_DEV_REDIS_HOST=gateway-redis-dev
       - GATEWAY_DEV_REDIS_PORT=6379
       - SPARKPOST_API_KEY=$SPARKPOST_API_KEY
+      - SESSION_SECRET=$SESSION_SECRET
   gateway-db-dev:
     image: postgres
     restart: always
