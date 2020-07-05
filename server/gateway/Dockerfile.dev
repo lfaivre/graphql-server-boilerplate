@@ -1,27 +1,23 @@
 # BASE
 FROM node:12.18.1-alpine AS BASE
 ENV DOCKERIZE_VERSION v0.6.1
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl rsync
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
   && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
   && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-
-# DEPENDENCIES
-FROM BASE AS DEPENDENCIES
-ENV NODE_ENV development
-
-WORKDIR /gateway
-COPY ./gateway/package*.json ./
-RUN npm set progress=false && npm config set depth 0
-RUN npm install
+RUN  mkdir -p /usr/src/cache/node_modules && \
+  mkdir -p /usr/src/scripts
+COPY ./scripts/entrypoint.sh /usr/src/scripts/
 
 # PRODUCTION
 FROM BASE AS PRODUCTION
 ENV NODE_ENV development
-WORKDIR /gateway
-COPY --from=DEPENDENCIES /gateway/node_modules ./node_modules
-COPY ./gateway .
+
+WORKDIR /usr/src/cache
+COPY ./package*.json ./
+RUN npm install --quiet
+
+WORKDIR /usr/src/gateway
 
 EXPOSE 4000
-
-CMD dockerize -wait tcp://gateway-db-dev:5432 -wait tcp://gateway-redis-dev:6379 -timeout 60m npm run start:dev
+CMD /usr/src/scripts/entrypoint.sh

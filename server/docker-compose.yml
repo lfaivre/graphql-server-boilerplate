@@ -3,8 +3,8 @@ version: '3.8'
 services:
   gateway-dev:
     build:
-      context: .
-      dockerfile: ./gateway/Dockerfile.dev
+      context: ./gateway
+      dockerfile: Dockerfile.dev
     depends_on:
       - gateway-db-dev
       - gateway-redis-dev
@@ -13,9 +13,7 @@ services:
     ports:
       - 0.0.0.0:4000:4000
     volumes:
-      - ./gateway:/gateway
-      - ./gateway/dist:/gateway/dist
-      - ./gateway/node_modules:/gateway/node_modules
+      - ./gateway:/usr/src/gateway
     environment:
       - GATEWAY_DEV_HOST=gateway-dev
       - GATEWAY_DEV_HOST_EXT=0.0.0.0
@@ -24,6 +22,7 @@ services:
       - GATEWAY_DEV_REDIS_PORT=6379
       - SPARKPOST_API_KEY=$SPARKPOST_API_KEY
       - SESSION_SECRET=$SESSION_SECRET
+
   gateway-db-dev:
     image: postgres
     restart: always

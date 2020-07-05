@@ -27,6 +27,7 @@ if (!process.env.SESSION_SECRET) {
 }
 
 export const startServer = async (): Promise<void> => {
+  console.log('TEST!');
   const app = express();
   const server = new ApolloServer({
     schema: schemas,
