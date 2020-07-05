@@ -82,7 +82,7 @@ services:
     depends_on:
       - gateway-dev
     image: lorenzofaivre/project-boilerplate/tests:latest
-    restart: on-failure
+    restart: 'no'
     volumes:
       - ./tests:/tests
       - ./tests/node_modules:/tests/node_modules

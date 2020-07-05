@@ -24,6 +24,7 @@ declare namespace GQL {
     __typename: 'Mutation';
     login: Array<IError> | null;
     register: Array<IError> | null;
+    TEST_createAndConfirmUser: Array<IError> | null;
     TEST_verifySuccessfulRegistration: Array<IError> | null;
     TEST_verifyCreateConfirmationLink: string;
     TEST_verifyUserConfirmed: boolean;
@@ -36,6 +37,11 @@ declare namespace GQL {
   }
 
   interface IRegisterOnMutationArguments {
+    email: string;
+    password: string;
+  }
+
+  interface ITESTCreateAndConfirmUserOnMutationArguments {
     email: string;
     password: string;
   }
@@ -63,8 +69,15 @@ declare namespace GQL {
     message: string;
   }
 
+  interface IUser {
+    __typename: 'User';
+    id: string;
+    email: string;
+  }
+
   interface IQuery {
     __typename: 'Query';
+    me: IUser | null;
     hello: string;
   }
 

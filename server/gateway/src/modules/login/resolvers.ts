@@ -1,4 +1,5 @@
 import * as bcrypt from 'bcryptjs';
+import { Request } from 'express';
 import { ResolverMap, Session } from '../../types/graphql-utils';
 import { User } from '../../entity/User';
 import { SchemaError } from '../../../shared/src/gateway/types/module-register-errors';
@@ -10,8 +11,9 @@ export const resolvers: ResolverMap = {
       // eslint-disable-next-line
       _: any,
       args: GQL.ILoginOnMutationArguments,
-      context: { session: Session }
+      context: { session: Session; request: Request }
     ): Promise<null | SchemaError[]> => {
+      // console.log('REQUEST REFERER (LOGIN):', context.request);
       const { email, password } = args;
       const user = await User.findOne({ where: { email } });
 
@@ -30,6 +32,9 @@ export const resolvers: ResolverMap = {
 
       if (context.session) {
         context.session.userId = user.id;
+        console.log('SESSION INFO (LOGIN):', context.session);
+      } else {
+        console.log('NO SESSION INFO (LOGIN):', context.session);
       }
 
       return null;

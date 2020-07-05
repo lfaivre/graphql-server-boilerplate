@@ -1,10 +1,10 @@
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
-import cors, { CorsOptions } from 'cors';
 import session from 'express-session';
 import RedisStore from 'connect-redis';
 import { createTypeORMConnection } from './utils/db-connection';
 import { redis } from './redis';
+import { corsOptionsDelegate } from './utils/cors';
 import { schemas } from './utils/merge-schema';
 import { warning } from './utils/warnings';
 import { DEFAULT_HOST, DEFAULT_PORT } from './constants';
@@ -14,11 +14,6 @@ import { confirmEmail } from './routes/confirm-email';
 const hostExternal = process.env.GATEWAY_DEV_HOST_EXT || DEFAULT_HOST;
 if (!process.env.GATEWAY_DEV_HOST_EXT) {
   warning('HOST', { host: DEFAULT_HOST });
-}
-
-const host = process.env.GATEWAY_DEV_HOST || 'gateway-dev';
-if (!process.env.GATEWAY_DEV_HOST) {
-  console.log('NO GATEWAY_DEV_HOST ENVIRONMENT VARIABLE AVAILABLE');
 }
 
 const port = process.env.GATEWAY_DEV_PORT || DEFAULT_PORT;
@@ -32,22 +27,13 @@ if (!process.env.SESSION_SECRET) {
 }
 
 export const startServer = async (): Promise<void> => {
-  await createTypeORMConnection();
+  const app = express();
   const server = new ApolloServer({
     schema: schemas,
-    context: ({ req }) => ({ redis, session: req.session }),
+    context: ({ req }) => ({ redis, session: req.session, request: req }),
   });
 
-  const app = express();
-
-  const corsOptions: CorsOptions = {
-    origin: [`http://${hostExternal}:${port}`, `http://${host}:${port}`],
-    optionsSuccessStatus: 200,
-  };
-
-  app.use(cors(corsOptions));
   const RedisStoreWithSession = RedisStore(session);
-
   app.use(
     session({
       store: new RedisStoreWithSession({
@@ -65,7 +51,9 @@ export const startServer = async (): Promise<void> => {
     })
   );
 
-  server.applyMiddleware({ app });
+  server.applyMiddleware({ app, cors: corsOptionsDelegate });
+
+  await createTypeORMConnection();
 
   app.get('/confirm/:id', confirmEmail);
 
