@@ -5,14 +5,14 @@ RUN apk add --no-cache openssl
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
   && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
   && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+RUN npm install -g jest-cli --quiet
 
 # DEPENDENCIES
 FROM BASE AS DEPENDENCIES
 ENV NODE_ENV development
 WORKDIR /tests
 COPY ./tests/package*.json ./
-RUN npm set progress=false && npm config set depth 0
-RUN npm install
+RUN npm install --quiet
 
 # PRODUCTION
 FROM BASE AS PRODUCTION
@@ -22,4 +22,8 @@ COPY --from=DEPENDENCIES /tests/node_modules ./node_modules
 COPY ./tests .
 
 # CMD dockerize -wait tcp://host.docker.internal:3002 -timeout 60m npm run start
-CMD dockerize -wait tcp://host.docker.internal:4000 -timeout 60m npm run start
+CMD dockerize \
+  -wait tcp://gateway-dev:4000 \
+  -wait http://gateway-dev:4000 \
+  -timeout 60m \
+  tail -f /dev/null

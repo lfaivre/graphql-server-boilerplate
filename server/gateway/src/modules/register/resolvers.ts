@@ -53,7 +53,6 @@ export const resolvers: ResolverMap = {
       });
       const link = await createConfirmEmailLink(user.id, context.redis);
       await sendEmail(email, link);
-      console.log(`CONFIRMATION LINK CREATED (USER ID: ${user.id}): ${link}`);
       return null;
     },
   },

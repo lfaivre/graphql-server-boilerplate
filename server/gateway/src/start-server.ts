@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import session from 'express-session';
 import RedisStore from 'connect-redis';
@@ -27,7 +27,6 @@ if (!process.env.SESSION_SECRET) {
 }
 
 export const startServer = async (): Promise<void> => {
-  console.log('TEST!');
   const app = express();
   const server = new ApolloServer({
     schema: schemas,
@@ -56,9 +55,20 @@ export const startServer = async (): Promise<void> => {
 
   await createTypeORMConnection();
 
+  app.get('/', (req: Request, res: Response) => {
+    console.log('RESQUEST TO PATH / - REQUEST HOST:', req.headers.host);
+    res.sendStatus(204);
+  });
+
   app.get('/confirm/:id', confirmEmail);
 
   app.listen({ hostExternal, port }, () => {
-    console.log(`Server running at ${hostExternal}:${port}${server.graphqlPath}`);
+    console.log(`
+      The Server is running!
+
+      Host: http://${hostExternal}:${port}${server.graphqlPath}
+      Host(localhost): http://localhost:4000
+      Docker: http://gateway-dev:4000
+    `);
   });
 };

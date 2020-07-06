@@ -13,7 +13,7 @@ services:
     ports:
       - 0.0.0.0:4000:4000
     volumes:
-      - ./gateway:/usr/src/gateway
+      - ./gateway:/usr/src/gateway:delegated
     environment:
       - GATEWAY_DEV_HOST=gateway-dev
       - GATEWAY_DEV_HOST_EXT=0.0.0.0
@@ -22,7 +22,6 @@ services:
       - GATEWAY_DEV_REDIS_PORT=6379
       - SPARKPOST_API_KEY=$SPARKPOST_API_KEY
       - SESSION_SECRET=$SESSION_SECRET
-
   gateway-db-dev:
     image: postgres
     restart: always
@@ -32,8 +31,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: gateway-db-dev
-    volumes:
-      - gateway-db-data-dev:/var/lib/postgresql/data
   gateway-redis-dev:
     image: redis:6.0.5-alpine
     restart: always
@@ -66,8 +63,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: gateway-db-test
-    volumes:
-      - gateway-db-data-test:/var/lib/postgresql/data
   gateway-redis-test:
     image: redis:6.0.5-alpine
     restart: always
@@ -83,13 +78,8 @@ services:
     image: lorenzofaivre/project-boilerplate/tests:latest
     restart: 'no'
     volumes:
-      - ./tests:/tests
-      - ./tests/node_modules:/tests/node_modules
+      - ./tests:/tests:ro,delegated
     environment:
       - GATEWAY_TEST_HOST=gateway-dev
       - GATEWAY_TEST_HOST_EXT=0.0.0.0
       - GATEWAY_TEST_PORT=4000
-
-volumes:
-  gateway-db-data-dev:
-  gateway-db-data-test:

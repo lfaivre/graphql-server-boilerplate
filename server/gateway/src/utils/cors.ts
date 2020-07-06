@@ -16,20 +16,17 @@ if (!process.env.GATEWAY_DEV_HOST) {
 const allowed = ['http://localhost:4000', `http://${hostExternal}`, `http://${host}`];
 export const corsOptionsDelegate: CorsOptionsDelegate = (req, callback) => {
   let corsOptions: CorsOptions = {
-    optionsSuccessStatus: 200,
+    optionsSuccessStatus: 204,
     credentials: true,
   };
   const origin = req.header('Origin');
   if (!origin) {
     // TODO ;: Need to handle this with a more robust networking setup
-    console.log('SETTING CORS TO http://tests');
     corsOptions = { ...corsOptions, origin: 'http://tests' };
   } else if (allowed.indexOf(origin) !== -1) {
-    console.log('SETTING CORS TO true');
     corsOptions = { ...corsOptions, origin: true };
   } else {
     callback(new Error('Not allowed by CORS'));
   }
-  // console.log('CORS OPTIONS:', corsOptions);
   callback(null, corsOptions);
 };

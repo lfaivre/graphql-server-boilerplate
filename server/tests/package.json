@@ -4,14 +4,17 @@
   "description": "",
   "dependencies": {
     "axios": "^0.19.2",
+    "axios-cookiejar-support": "^1.0.0",
     "graphql-request": "^2.1.0-next.1",
     "node-fetch": "^2.6.0",
-    "randomatic": "^3.1.1"
+    "randomatic": "^3.1.1",
+    "tough-cookie": "^4.0.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.3",
     "@types/node": "^14.0.14",
     "@types/node-fetch": "^2.5.7",
+    "@types/tough-cookie": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^3.4.0",
     "@typescript-eslint/parser": "^3.4.0",
     "copyfiles": "^2.3.0",
@@ -26,7 +29,7 @@
     "typescript": "^3.9.5"
   },
   "scripts": {
-    "start": "npx jest --detectOpenHandles && exit 0",
+    "start": "npx jest --runInBand --detectOpenHandles && exit 0",
     "lint": "eslint --ext .ts ./",
     "temp:install-shared": "rimraf ./shared && copyfiles -V \"../shared/src/**/*.ts\" ./shared",
     "dc:pre-start": "npm run temp:install-shared",
