@@ -7,7 +7,7 @@ import { redis } from './redis';
 import { corsOptionsDelegate } from './utils/cors';
 import { schemas } from './utils/merge-schema';
 import { warning } from './utils/warnings';
-import { DEFAULT_HOST, DEFAULT_PORT } from './constants';
+import { DEFAULT_HOST, DEFAULT_PORT, REDIS_SESSION_PREFIX } from './constants';
 import { confirmEmail } from './routes/confirm-email';
 
 // TODO :: Move these initializations to a separate file with an export
@@ -38,6 +38,7 @@ export const startServer = async (): Promise<void> => {
     session({
       store: new RedisStoreWithSession({
         client: redis,
+        prefix: REDIS_SESSION_PREFIX,
       }),
       name: 'qid',
       secret: SESSION_SECRET as string,

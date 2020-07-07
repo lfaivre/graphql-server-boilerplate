@@ -4,7 +4,7 @@ import axiosCookieJarSupport from 'axios-cookiejar-support';
 import tough from 'tough-cookie';
 import randomize from 'randomatic';
 import { host } from '../../../setup';
-import { TEST_createAndConfirmUser, login, logout } from './mutations';
+import { TEST_createAndConfirmUser, login, logout, logoutAll } from './mutations';
 import { me } from './queries';
 
 describe('log out user', () => {
@@ -54,12 +54,11 @@ describe('log out user', () => {
     const query = me();
     const response4 = await instance1.post(host, { query }, { withCredentials: true });
 
-    const mutation3 = logout();
+    const mutation3 = logoutAll();
     const response5 = await instance1.post(host, { query: mutation3 }, { withCredentials: true });
-    expect(response5.data.data.logout).toEqual(true);
+    expect(response5.data.data.logoutAll).toEqual(true);
 
-    // TEMPORARY UNTIL IMPLEMENTATION
     const response6 = await instance2.post(host, { query }, { withCredentials: true });
-    expect(response4.data.data.me.email).toEqual(response6.data.data.me.email);
+    expect(response4.data.data.me).not.toEqual(response6.data.data.me);
   });
 });

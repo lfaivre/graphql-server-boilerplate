@@ -6,18 +6,19 @@ export interface Session extends Express.Session {
   userId?: string;
 }
 
-export type Resolver = (
-  parent: any,
-  args: any,
-  context: { redis: Redis; session: Session; request: Request },
-  info: any
-) => any;
+export interface Context {
+  redis: Redis;
+  session: Session;
+  request: Request;
+}
+
+export type Resolver = (parent: any, args: any, context: Context, info: any) => any;
 
 export type GraphQLMiddlewareFunc = (
   resolver: Resolver,
   parent: any,
   args: any,
-  context: { redis: Redis; session: Session },
+  context: Context,
   info: any
 ) => any;
 

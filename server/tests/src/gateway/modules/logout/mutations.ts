@@ -6,6 +6,12 @@ export const logout = (): string => `
   }
 `;
 
+export const logoutAll = (): string => `
+  mutation {
+    logoutAll
+  }
+`;
+
 export const TEST_createAndConfirmUser = (email: string, password: string): string => `
   mutation {
     TEST_createAndConfirmUser(email: "${email}", password: "${password}") {
