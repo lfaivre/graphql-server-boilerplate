@@ -32,7 +32,6 @@ export const resolvers: ResolverMap = {
 
       if (context.session) {
         context.session.userId = user.id;
-        console.log('SESSION INFO (LOGIN):', context.session);
       } else {
         console.log('NO SESSION INFO (LOGIN):', context.session);
       }

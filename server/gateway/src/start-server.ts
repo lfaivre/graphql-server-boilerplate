@@ -55,8 +55,7 @@ export const startServer = async (): Promise<void> => {
 
   await createTypeORMConnection();
 
-  app.get('/', (req: Request, res: Response) => {
-    console.log('RESQUEST TO PATH / - REQUEST HOST:', req.headers.host);
+  app.get('/', (_req: Request, res: Response) => {
     res.sendStatus(204);
   });
 
