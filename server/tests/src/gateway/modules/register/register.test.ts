@@ -1,64 +1,75 @@
-import { request } from 'graphql-request';
 import randomize from 'randomatic';
-import { host } from '../../../setup';
-import { register, TEST_verifySuccessfulRegistration } from './mutations';
+import { TestUser } from '../../types';
+import { newUser } from '../../utils/new-user';
+import { GraphQLMutations as GQLM } from '../../mutations';
+import { gqlResponse } from '../../utils/responses';
 import {
   ERRORS,
-  YUP_SCHEMA_ERRORS as YEM,
+  YUP_ERROR_MESSAGES as YEM,
 } from '../../../../shared/src/gateway/constants/module-register-errors';
 
 // TODO :: Need to check handling multiple errors: .toEqual({ register: {[{...}, {...}]} })
+let user1: TestUser;
+let user2: TestUser;
+let user3: TestUser;
 
 describe('register user', () => {
-  test('user can be successfully registered', async () => {
-    const email = `${randomize('Aa0', 4)}@test.com`;
-    const password = randomize('*', 4);
+  test('generate first user', async () => {
+    user1 = await newUser(false, false, false);
+    expect(user1.isRegistered).toEqual(false);
+    expect(user1.isConfirmed).toEqual(false);
+  });
 
-    const mutation1 = register(email, password);
-    const response1 = await request(host, mutation1);
+  test('user can be successfully registered', async () => {
+    const { email, password } = user1;
+
+    const response1 = await gqlResponse(GQLM.register(email, password));
     expect(response1).toEqual({ register: null });
 
-    const mutation2 = TEST_verifySuccessfulRegistration(email, password);
-    const response2 = await request(host, mutation2);
+    const response2 = await gqlResponse(GQLM.TEST_verifySuccessfulRegistration(email, password));
     expect(response2).toEqual({ TEST_verifySuccessfulRegistration: null });
   });
 
   test('registering another user with the same email returns an error', async () => {
-    const email = `${randomize('Aa0', 4)}@test.com`;
-    const password = randomize('*', 4);
+    const { email, password } = user1;
 
-    const mutation = register(email, password);
-    const response = await request(host, mutation);
-    expect(response).toEqual({ register: null });
-    const response2 = await request(host, mutation);
-    expect(response2).toEqual({ register: [ERRORS.EMAIL_TAKEN] });
+    const response1 = await gqlResponse(GQLM.register(email, password));
+    expect(response1).toEqual({ register: [ERRORS.EMAIL_TAKEN] });
+  });
+
+  test('generate second user', async () => {
+    user2 = await newUser(false, false, false);
+    expect(user2.isRegistered).toEqual(false);
+    expect(user2.isConfirmed).toEqual(false);
   });
 
   test('registering with an invalid email returns an error', async () => {
-    const email1 = randomize('Aa0', 4);
-    const email2 = `${randomize('Aa0', 256)}@test.com`;
-    const password = randomize('*', 4);
+    const invalidEmail1 = randomize('Aa0', 4);
+    user2.email = invalidEmail1;
+    const response1 = await gqlResponse(GQLM.register(user2.email, user2.password));
+    expect(response1.register[0].message).toEqual(YEM.EMAIL_NOT_VALID);
 
-    const mutation1 = register(email1, password);
-    const response1 = await request(host, mutation1);
-    expect(response1).toEqual({ register: [YEM.EMAIL_NOT_VALID] });
+    const invalidEmail2 = `${randomize('Aa0', 256)}@test.com`;
+    user2.email = invalidEmail2;
+    const response2 = await gqlResponse(GQLM.register(user2.email, user2.password));
+    expect(response2.register[0].message).toEqual(YEM.EMAIL_LENGTH_MAX);
+  });
 
-    const mutation2 = register(email2, password);
-    const response2 = await request(host, mutation2);
-    expect(response2).toEqual({ register: [YEM.EMAIL_LENGTH_MAX] });
+  test('generate third user', async () => {
+    user3 = await newUser(false, false, false);
+    expect(user3.isRegistered).toEqual(false);
+    expect(user3.isConfirmed).toEqual(false);
   });
 
   test('registering with an invalid password returns an error', async () => {
-    const email = `${randomize('Aa0', 4)}@test.com`;
-    const password1 = randomize('*', 2);
-    const password2 = randomize('*', 256);
+    const invalidPassword1 = randomize('*', 2);
+    user3.password = invalidPassword1;
+    const response1 = await gqlResponse(GQLM.register(user3.email, user3.password));
+    expect(response1.register[0].message).toEqual(YEM.PASSWORD_LENGTH_MIN);
 
-    const mutation1 = register(email, password1);
-    const response1 = await request(host, mutation1);
-    expect(response1).toEqual({ register: [YEM.PASSWORD_LENGTH_MIN] });
-
-    const mutation2 = register(email, password2);
-    const response2 = await request(host, mutation2);
-    expect(response2).toEqual({ register: [YEM.PASSWORD_LENGTH_MAX] });
+    const invalidPassword2 = randomize('*', 256);
+    user3.password = invalidPassword2;
+    const response2 = await gqlResponse(GQLM.register(user3.email, user3.password));
+    expect(response2.register[0].message).toEqual(YEM.PASSWORD_LENGTH_MAX);
   });
 });

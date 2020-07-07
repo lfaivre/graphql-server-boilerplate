@@ -15,7 +15,15 @@ export const resolvers: ResolverMap = {
     ): Promise<null | SchemaError[]> => {
       const { email, password } = args;
       const users = await User.find({ where: { email } });
-      if (users.length !== 1) {
+      if (users.length === 0) {
+        return [
+          {
+            path: 'email',
+            message: 'Email not registered.',
+          },
+        ];
+      }
+      if (users.length > 1) {
         return [ERRORS.EMAIL_MULTIPLE_USERS];
       }
       const user = users[0];

@@ -1,64 +1,97 @@
-import { request } from 'graphql-request';
-import axios from 'axios';
-import axiosCookieJarSupport from 'axios-cookiejar-support';
-import tough from 'tough-cookie';
-import randomize from 'randomatic';
-import { host } from '../../../setup';
-import { TEST_createAndConfirmUser, login, logout, logoutAll } from './mutations';
-import { me } from './queries';
+import { TestUser } from '../../types';
+import { newUser } from '../../utils/new-user';
+import { axiosResponse } from '../../utils/responses';
+import { GraphQLMutations as GQLM } from '../../mutations';
+import { GraphQLQueries as GQLQ } from '../../queries';
+import { axiosInstanceWithCookies } from '../../utils/axios-persisted';
+
+const { stringify } = JSON;
+
+let user1: TestUser;
+let user2: TestUser;
+let user3: TestUser;
 
 describe('log out user', () => {
+  test('generate and log in first user', async () => {
+    user1 = await newUser(true, true, true);
+    expect(user1.isRegistered).toEqual(true);
+    expect(user1.isConfirmed).toEqual(true);
+    expect(user1.axiosInstance).not.toBeUndefined();
+
+    const { email, password, axiosInstance } = user1;
+    const intialInstance = stringify(user1.axiosInstance?.defaults.jar);
+
+    const result = await axiosResponse(GQLM.login(email, password), true, true, axiosInstance);
+    if (result.updatedInstance) user1.axiosInstance = result.updatedInstance;
+    expect(result.response.data.data).toEqual({ login: null });
+
+    const updatedInstance = stringify(user1.axiosInstance?.defaults.jar);
+    expect(updatedInstance).not.toEqual(intialInstance);
+  });
+
   test('a user can log out of one session', async () => {
-    const email = `${randomize('Aa0', 4)}@test.com`;
-    const password = randomize('*', 4);
+    const { axiosInstance } = user1;
 
-    const instance1 = axios.create();
-    axiosCookieJarSupport(instance1);
-    instance1.defaults.jar = new tough.CookieJar();
+    const result = await axiosResponse(GQLM.logout(), true, true, axiosInstance);
+    if (result.updatedInstance) user1.axiosInstance = result.updatedInstance;
+    expect(result.response.data.data).toEqual({ logout: true });
+  });
 
-    const mutation1 = TEST_createAndConfirmUser(email, password);
-    const response1 = await request(host, mutation1);
-    expect(response1).toEqual({ TEST_createAndConfirmUser: null });
+  test('generate and log in two users using the same credentials', async () => {
+    user2 = await newUser(true, true, false);
+    expect(user2.isRegistered).toEqual(true);
+    expect(user2.isConfirmed).toEqual(true);
+    expect(user2.axiosInstance).toBeUndefined();
 
-    const mutation2 = login(email, password);
-    const response2 = await instance1.post(host, { query: mutation2 }, { withCredentials: true });
-    expect(response2.data.data.login).toEqual(null);
+    user3 = { ...user2 };
 
-    const mutation3 = logout();
-    const response3 = await instance1.post(host, { query: mutation3 }, { withCredentials: true });
-    expect(response3.data.data.logout).toEqual(true);
+    user2.axiosInstance = axiosInstanceWithCookies();
+    user3.axiosInstance = axiosInstanceWithCookies();
+    const user2IntialInstance = stringify(user2.axiosInstance.defaults.jar);
+    const user3IntialInstance = stringify(user3.axiosInstance.defaults.jar);
+
+    const result1 = await axiosResponse(
+      GQLM.login(user2.email, user2.password),
+      true,
+      true,
+      user2.axiosInstance
+    );
+    const result2 = await axiosResponse(
+      GQLM.login(user3.email, user3.password),
+      true,
+      true,
+      user3.axiosInstance
+    );
+
+    expect(result1.response.data.data).toEqual({ login: null });
+    expect(result2.response.data.data).toEqual({ login: null });
+
+    if (result1.updatedInstance) user2.axiosInstance = result1.updatedInstance;
+    if (result2.updatedInstance) user3.axiosInstance = result2.updatedInstance;
+
+    const user2UpdatedInstance = stringify(user2.axiosInstance?.defaults.jar);
+    const user3UpdatedInstance = stringify(user3.axiosInstance?.defaults.jar);
+
+    expect(user2UpdatedInstance).not.toEqual(user3UpdatedInstance);
+    expect(user2UpdatedInstance).not.toEqual(user2IntialInstance);
+    expect(user3UpdatedInstance).not.toEqual(user3IntialInstance);
   });
 
   test('a user can log out of all sessions', async () => {
-    const email = `${randomize('Aa0', 4)}@test.com`;
-    const password = randomize('*', 4);
+    const result1 = await axiosResponse(GQLQ.me(), true, true, user2.axiosInstance);
+    const result2 = await axiosResponse(GQLQ.me(), true, true, user3.axiosInstance);
 
-    const instance1 = axios.create();
-    axiosCookieJarSupport(instance1);
-    instance1.defaults.jar = new tough.CookieJar();
+    if (result1.updatedInstance) user2.axiosInstance = result1.updatedInstance;
+    if (result2.updatedInstance) user3.axiosInstance = result2.updatedInstance;
 
-    const instance2 = axios.create();
-    axiosCookieJarSupport(instance2);
-    instance2.defaults.jar = new tough.CookieJar();
+    expect(result1.response.data.data.me).toEqual(result2.response.data.data.me);
 
-    const mutation1 = TEST_createAndConfirmUser(email, password);
-    const response1 = await request(host, mutation1);
-    expect(response1).toEqual({ TEST_createAndConfirmUser: null });
+    const result3 = await axiosResponse(GQLM.logoutAll(), true, true, user2.axiosInstance);
+    if (result3.updatedInstance) user2.axiosInstance = result3.updatedInstance;
+    expect(result3.response.data.data).toEqual({ logoutAll: true });
 
-    const mutation2 = login(email, password);
-    const response2 = await instance1.post(host, { query: mutation2 }, { withCredentials: true });
-    const response3 = await instance2.post(host, { query: mutation2 }, { withCredentials: true });
-    expect(response2.data.data.login).toEqual(null);
-    expect(response3.data.data.login).toEqual(null);
-
-    const query = me();
-    const response4 = await instance1.post(host, { query }, { withCredentials: true });
-
-    const mutation3 = logoutAll();
-    const response5 = await instance1.post(host, { query: mutation3 }, { withCredentials: true });
-    expect(response5.data.data.logoutAll).toEqual(true);
-
-    const response6 = await instance2.post(host, { query }, { withCredentials: true });
-    expect(response4.data.data.me).not.toEqual(response6.data.data.me);
+    const result4 = await axiosResponse(GQLQ.me(), true, true, user3.axiosInstance);
+    if (result4.updatedInstance) user3.axiosInstance = result4.updatedInstance;
+    expect(result4.response.data.data).toEqual({ me: null });
   });
 });

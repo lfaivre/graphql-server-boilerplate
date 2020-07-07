@@ -1,39 +1,40 @@
-import { request } from 'graphql-request';
-import axios from 'axios';
-import axiosCookieJarSupport from 'axios-cookiejar-support';
-import tough from 'tough-cookie';
-import randomize from 'randomatic';
-import { host } from '../../../setup';
-import { TEST_createAndConfirmUser, login } from './mutations';
-import { me } from './queries';
+import { TestUser } from '../../types';
+import { newUser } from '../../utils/new-user';
+import { axiosResponse } from '../../utils/responses';
+import { GraphQLMutations as GQLM } from '../../mutations';
+import { GraphQLQueries as GQLQ } from '../../queries';
 
-const instance = axios.create();
-axiosCookieJarSupport(instance);
-instance.defaults.jar = new tough.CookieJar();
+const { stringify } = JSON;
 
-const email = `${randomize('Aa0', 4)}@test.com`;
-const password = randomize('*', 4);
+let user1: TestUser;
 
 describe('retrieve user', () => {
+  test('generate and log in first user', async () => {
+    user1 = await newUser(true, true, true);
+    expect(user1.isRegistered).toEqual(true);
+    expect(user1.isConfirmed).toEqual(true);
+    expect(user1.axiosInstance).not.toBeUndefined();
+
+    const { email, password, axiosInstance } = user1;
+    const intialInstance = stringify(user1.axiosInstance?.defaults.jar);
+
+    const result = await axiosResponse(GQLM.login(email, password), true, true, axiosInstance);
+    if (result.updatedInstance) user1.axiosInstance = result.updatedInstance;
+    expect(result.response.data.data).toEqual({ login: null });
+
+    const updatedInstance = stringify(user1.axiosInstance?.defaults.jar);
+    expect(updatedInstance).not.toEqual(intialInstance);
+  });
+
   test('user can retrieve their information', async () => {
-    const mutation1 = TEST_createAndConfirmUser(email, password);
-    const response1 = await request(host, mutation1);
-    expect(response1).toEqual({ TEST_createAndConfirmUser: null });
-
-    const mutation2 = login(email, password);
-    const response2 = await instance.post(host, { query: mutation2 }, { withCredentials: true });
-    expect(response2.data.data.login).toEqual(null);
-
-    const query = me();
-    const response3 = await instance.post(host, { query }, { withCredentials: true });
-    expect(response3.data.data.me.email).toEqual(email);
+    const result = await axiosResponse(GQLQ.me(), true, true, user1.axiosInstance);
+    if (result.updatedInstance) user1.axiosInstance = result.updatedInstance;
+    expect(result.response.data.data.me.email).toEqual(user1.email);
   });
 
   test('an unknown user is unable to retrieve information', async () => {
-    const query = me();
-    const response = await instance.post(host, { query }, { withCredentials: false });
-    expect(response.data.data.me).toEqual(null);
-    // TODO: More robust error checking
-    expect(response.data.errors.length).not.toEqual(0);
+    const result = await axiosResponse(GQLQ.me(), true, false, user1.axiosInstance);
+    if (result.updatedInstance) user1.axiosInstance = result.updatedInstance;
+    expect(result.response.data.data).toEqual({ me: null });
   });
 });

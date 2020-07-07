@@ -1,10 +1,8 @@
-import { request } from 'graphql-request';
-import { host } from '../../../setup';
-import { hello } from './queries';
+import { gqlResponse } from '../../utils/responses';
+import { GraphQLQueries as GQLQ } from '../../queries';
 
 test('temporary query resolves', async () => {
   const name = 'test';
-  const query = hello(name);
-  const response = await request(host, query);
+  const response = await gqlResponse(GQLQ.hello(name));
   expect(response).toEqual({ hello: `Hello ${name}` });
 });

@@ -1,51 +1,42 @@
-import { request } from 'graphql-request';
-import fetch from 'node-fetch';
-import randomize from 'randomatic';
-import { host } from '../../../setup';
-import {
-  register,
-  TEST_verifyCreateConfirmationLink,
-  TEST_verifyUserConfirmed,
-  TEST_verifyUserIDRemovedFromRedis,
-} from './mutations';
+import { TestUser } from '../../types';
+import { newUser } from '../../utils/new-user';
+import { GraphQLMutations as GQLM } from '../../mutations';
+import { gqlResponse, nodeFetchResponse } from '../../utils/responses';
 
-const email = `${randomize('Aa0', 4)}@test.com`;
-const password = randomize('*', 4);
+let user1: TestUser;
 let link: string;
 
-beforeAll(async () => {
-  const mutation = register(email, password);
-  const response = await request(host, mutation);
-  expect(response).toEqual({ register: null });
-});
-
 describe('confirmation link', () => {
+  test('generate first user', async () => {
+    user1 = await newUser(true, false, false);
+    expect(user1.isRegistered).toEqual(true);
+    expect(user1.isConfirmed).toEqual(false);
+  });
+
   test('user receives a confirmation link after registering', async () => {
-    const mutation = TEST_verifyCreateConfirmationLink(email);
-    const response = await request(host, mutation);
+    const response = await gqlResponse(GQLM.TEST_verifyCreateConfirmationLink(user1.email));
     expect(response).not.toEqual({ TEST_verifyCreateConfirmationLink: null });
     link = response.TEST_verifyCreateConfirmationLink;
   });
 
   test('confirmation link works', async () => {
-    expect(link).not.toEqual(undefined);
-    const response = await fetch(link);
+    expect(link).not.toBeUndefined();
+    const response = await nodeFetchResponse(link);
     const text = await response.text();
     expect(text).toEqual('Email confirmed.');
   });
 
   test('user is confirmed', async () => {
-    const mutation = TEST_verifyUserConfirmed(email);
-    const response = await request(host, mutation);
+    const response = await gqlResponse(GQLM.TEST_verifyUserConfirmed(user1.email));
     expect(response).toEqual({ TEST_verifyUserConfirmed: true });
   });
 
   test('user id is removed from redis', async () => {
-    expect(link).not.toEqual(undefined);
+    expect(link).not.toBeUndefined();
     const chunks = link.split('/');
     const id = chunks[chunks.length - 1];
-    const mutation = TEST_verifyUserIDRemovedFromRedis(id);
-    const response = await request(host, mutation);
+
+    const response = await gqlResponse(GQLM.TEST_verifyUserIDRemovedFromRedis(id));
     expect(response).toEqual({ TEST_verifyUserIDRemovedFromRedis: true });
   });
 });
