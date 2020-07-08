@@ -20,7 +20,13 @@ export const resolvers: ResolverMap = {
 
       if (!user) return [ERRORS.LOGIN_INVALID];
       if (!user.confirmed) return [ERRORS.EMAIL_NOT_CONFIRMED];
-
+      if (user.forgotPasswordLocked)
+        return [
+          {
+            path: 'email',
+            message: 'Account is locked.',
+          },
+        ];
       const validPassword = await bcrypt.compare(password, user.password);
       if (!validPassword) return [ERRORS.LOGIN_INVALID];
 

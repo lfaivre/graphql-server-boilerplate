@@ -1,7 +1,6 @@
 import { Redis } from 'ioredis';
 import { ResolverMap, Session } from '../../types/graphql-utils';
-import { USER_SESSION_ID_PREFIX, REDIS_SESSION_PREFIX } from '../../constants';
-import { redis } from '../../redis';
+import { removeAllUserSessions } from '../../utils/remove-all-user-sessions';
 
 export const resolvers: ResolverMap = {
   Mutation: {
@@ -26,14 +25,7 @@ export const resolvers: ResolverMap = {
     ): Promise<boolean> => {
       const { userId } = context.session;
       if (!userId) return false;
-
-      const sessionIds = await context.redis.lrange(`${USER_SESSION_ID_PREFIX}${userId}`, 0, -1);
-
-      await sessionIds.reduce(async (promise, id) => {
-        await promise;
-        await redis.del(`${REDIS_SESSION_PREFIX}${id}`);
-      }, Promise.resolve());
-
+      await removeAllUserSessions(userId, context.redis);
       return true;
     },
   },

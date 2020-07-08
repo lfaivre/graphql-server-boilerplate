@@ -1,12 +1,12 @@
-import randomize from 'randomatic';
 import { TestUser } from '../../types';
-import { newUser } from '../../utils/new-user';
+import { newUser, newEmail, newPassword } from '../../utils/new-user';
 import { GraphQLMutations as GQLM } from '../../mutations';
 import { gqlResponse } from '../../utils/responses';
 import {
   ERRORS,
   YUP_ERROR_MESSAGES as YEM,
 } from '../../../../shared/src/gateway/constants/module-register-errors';
+import { randomAlphaNumeric } from '../../utils/random-generators';
 
 // TODO :: Need to check handling multiple errors: .toEqual({ register: {[{...}, {...}]} })
 let user1: TestUser;
@@ -44,12 +44,12 @@ describe('register user', () => {
   });
 
   test('registering with an invalid email returns an error', async () => {
-    const invalidEmail1 = randomize('Aa0', 4);
+    const invalidEmail1 = randomAlphaNumeric(4);
     user2.email = invalidEmail1;
     const response1 = await gqlResponse(GQLM.register(user2.email, user2.password));
     expect(response1.register[0].message).toEqual(YEM.EMAIL_NOT_VALID);
 
-    const invalidEmail2 = `${randomize('Aa0', 256)}@test.com`;
+    const invalidEmail2 = newEmail(256);
     user2.email = invalidEmail2;
     const response2 = await gqlResponse(GQLM.register(user2.email, user2.password));
     expect(response2.register[0].message).toEqual(YEM.EMAIL_LENGTH_MAX);
@@ -62,12 +62,12 @@ describe('register user', () => {
   });
 
   test('registering with an invalid password returns an error', async () => {
-    const invalidPassword1 = randomize('*', 2);
+    const invalidPassword1 = newPassword(2);
     user3.password = invalidPassword1;
     const response1 = await gqlResponse(GQLM.register(user3.email, user3.password));
     expect(response1.register[0].message).toEqual(YEM.PASSWORD_LENGTH_MIN);
 
-    const invalidPassword2 = randomize('*', 256);
+    const invalidPassword2 = newPassword(256);
     user3.password = invalidPassword2;
     const response2 = await gqlResponse(GQLM.register(user3.email, user3.password));
     expect(response2.register[0].message).toEqual(YEM.PASSWORD_LENGTH_MAX);

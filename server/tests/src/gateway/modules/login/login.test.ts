@@ -1,7 +1,6 @@
-import randomize from 'randomatic';
 import { gqlResponse } from '../../utils/responses';
 import { GraphQLMutations as GQLM } from '../../mutations';
-import { newUser } from '../../utils/new-user';
+import { newUser, newEmail, newPassword } from '../../utils/new-user';
 import { TestUser } from '../../types';
 import { ERRORS } from '../../../../shared/src/gateway/constants/module-login-errors';
 
@@ -24,7 +23,7 @@ describe('log in user', () => {
 
   test('user is unable to login with incorrect email', async () => {
     const { password } = user1;
-    const incorrectEmail = `${randomize('Aa0', 16)}@test.com`;
+    const incorrectEmail = newEmail();
 
     const response = await gqlResponse(GQLM.login(incorrectEmail, password));
     expect(response).toEqual({ login: [ERRORS.LOGIN_INVALID] });
@@ -32,7 +31,7 @@ describe('log in user', () => {
 
   test('user is unable to login with incorrect password', async () => {
     const { email } = user1;
-    const incorrectPassword = randomize('*', 16);
+    const incorrectPassword = newPassword();
 
     const response = await gqlResponse(GQLM.login(email, incorrectPassword));
     expect(response).toEqual({ login: [ERRORS.LOGIN_INVALID] });

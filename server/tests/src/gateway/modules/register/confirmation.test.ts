@@ -17,10 +17,10 @@ describe('confirmation link', () => {
     const response = await gqlResponse(GQLM.TEST_verifyCreateConfirmationLink(user1.email));
     expect(response).not.toEqual({ TEST_verifyCreateConfirmationLink: null });
     link = response.TEST_verifyCreateConfirmationLink;
+    expect(link).not.toBeUndefined();
   });
 
   test('confirmation link works', async () => {
-    expect(link).not.toBeUndefined();
     const response = await nodeFetchResponse(link);
     const text = await response.text();
     expect(text).toEqual('Email confirmed.');
@@ -32,7 +32,6 @@ describe('confirmation link', () => {
   });
 
   test('user id is removed from redis', async () => {
-    expect(link).not.toBeUndefined();
     const chunks = link.split('/');
     const id = chunks[chunks.length - 1];
 

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/naming-convention, no-underscore-dangle */
 
 // PRODUCTION
 
@@ -29,6 +29,24 @@ const logout = (): string => `
 const logoutAll = (): string => `
   mutation {
     logoutAll
+  }
+`;
+
+const sendForgotPasswordEmail = (email: string): string => `
+  mutation {
+    sendForgotPasswordEmail(email: "${email}") {
+      path
+      message
+    }
+  }
+`;
+
+const changeForgottenPassword = (newPassword: string, key: string): string => `
+  mutation {
+    changeForgottenPassword(newPassword: "${newPassword}", key: "${key}") {
+      path
+      message
+    }
   }
 `;
 
@@ -70,6 +88,12 @@ const TEST_verifyUserIDRemovedFromRedis = (id: string): string => `
   }
 `;
 
+const _verifyForgotPasswordKeyCreation = (email: string): string => `
+  mutation {
+    _verifyForgotPasswordKeyCreation(email: "${email}")
+  }
+`;
+
 // EXPORTS
 
 export const GraphQLMutations = {
@@ -77,9 +101,12 @@ export const GraphQLMutations = {
   login,
   logout,
   logoutAll,
+  sendForgotPasswordEmail,
+  changeForgottenPassword,
   TEST_verifySuccessfulRegistration,
   TEST_createAndConfirmUser,
   TEST_verifyCreateConfirmationLink,
   TEST_verifyUserConfirmed,
   TEST_verifyUserIDRemovedFromRedis,
+  _verifyForgotPasswordKeyCreation,
 };

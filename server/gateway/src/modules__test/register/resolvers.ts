@@ -4,7 +4,7 @@ import { User } from '../../entity/User';
 import { SchemaError } from '../../../shared/src/gateway/types/module-register-errors';
 import { ERRORS } from '../../../shared/src/gateway/constants/module-register-errors';
 
-import { createConfirmEmailLink } from '../../utils/confirmation';
+import { createConfirmEmailLink } from '../../utils/create-link';
 
 export const resolvers: ResolverMap = {
   Mutation: {

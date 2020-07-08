@@ -22,13 +22,27 @@ declare namespace GQL {
 
   interface IMutation {
     __typename: 'Mutation';
+    sendForgotPasswordEmail: boolean | null;
+    changeForgottenPassword: Array<IError> | null;
     login: Array<IError> | null;
+    logout: boolean | null;
+    logoutAll: boolean | null;
     register: Array<IError> | null;
+    _verifyForgotPasswordKeyCreation: string;
     TEST_createAndConfirmUser: Array<IError> | null;
     TEST_verifySuccessfulRegistration: Array<IError> | null;
     TEST_verifyCreateConfirmationLink: string;
     TEST_verifyUserConfirmed: boolean;
     TEST_verifyUserIDRemovedFromRedis: boolean | null;
+  }
+
+  interface ISendForgotPasswordEmailOnMutationArguments {
+    email: string;
+  }
+
+  interface IChangeForgottenPasswordOnMutationArguments {
+    newPassword: string;
+    key: string;
   }
 
   interface ILoginOnMutationArguments {
@@ -39,6 +53,10 @@ declare namespace GQL {
   interface IRegisterOnMutationArguments {
     email: string;
     password: string;
+  }
+
+  interface IVerifyForgotPasswordKeyCreationOnMutationArguments {
+    email: string;
   }
 
   interface ITESTCreateAndConfirmUserOnMutationArguments {

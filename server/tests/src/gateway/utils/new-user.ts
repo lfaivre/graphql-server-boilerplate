@@ -1,10 +1,20 @@
-import randomize from 'randomatic';
 import { host } from '../../setup';
 import { GraphQLMutations as GQLM } from '../mutations';
 import { TestUser, RegisterUserResult, RegisterAndConfirmUserResult } from '../types';
 import { axiosInstanceWithCookies } from './axios-persisted';
+import { randomAlphaNumeric, randomAny } from './random-generators';
 
 const { stringify } = JSON;
+
+export const newEmail = (length?: number): string => {
+  const emailLength: number = length || 16;
+  return `${randomAlphaNumeric(emailLength)}@test.com`;
+};
+
+export const newPassword = (length?: number): string => {
+  const passwordLength: number = length || 16;
+  return randomAny(passwordLength);
+};
 
 const registerUser = async (email: string, password: string): Promise<RegisterUserResult> => {
   const axiosInstance = axiosInstanceWithCookies();
@@ -36,8 +46,8 @@ export const newUser = async (
   confirm: boolean,
   persistent: boolean
 ): Promise<TestUser> => {
-  const email = `${randomize('Aa0', 16)}@test.com`;
-  const password = randomize('*', 16);
+  const email = newEmail();
+  const password = newPassword();
   let isRegistered = false;
   let isConfirmed = false;
   let axiosInstance;

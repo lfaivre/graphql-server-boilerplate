@@ -1,24 +1,18 @@
-import * as bcrypt from 'bcryptjs';
 import * as yup from 'yup';
+import * as bcrypt from 'bcryptjs';
 import { Redis } from 'ioredis';
 import { ResolverMap } from '../../types/graphql-utils';
 import { User } from '../../entity/User';
 import { formatYupError } from '../../utils/format-yup-error';
 import { SchemaError } from '../../../shared/src/gateway/types/module-register-errors';
-import {
-  ERRORS,
-  YUP_ERROR_MESSAGES as YEM,
-} from '../../../shared/src/gateway/constants/module-register-errors';
-import { createConfirmEmailLink } from '../../utils/confirmation';
+import { ERRORS } from '../../../shared/src/gateway/constants/module-register-errors';
+import { createConfirmEmailLink } from '../../utils/create-link';
 import { sendEmail } from '../../utils/send-email';
+import { userEmailSchema, userPasswordSchema } from '../../yup-schemas';
 
-const schema = yup.object().shape({
-  email: yup
-    .string()
-    .email(YEM.EMAIL_NOT_VALID)
-    .min(3, YEM.EMAIL_LENGTH_MIN)
-    .max(255, YEM.EMAIL_LENGTH_MAX),
-  password: yup.string().min(3, YEM.PASSWORD_LENGTH_MIN).max(255, YEM.PASSWORD_LENGTH_MAX),
+export const userRegistrationSchema = yup.object().shape({
+  email: userEmailSchema,
+  password: userPasswordSchema,
 });
 
 export const resolvers: ResolverMap = {
@@ -31,7 +25,7 @@ export const resolvers: ResolverMap = {
     ): Promise<null | SchemaError[]> => {
       const { email, password } = args;
       try {
-        await schema.validate(args, { abortEarly: false });
+        await userRegistrationSchema.validate(args, { abortEarly: false });
       } catch (e) {
         return formatYupError(e);
       }
