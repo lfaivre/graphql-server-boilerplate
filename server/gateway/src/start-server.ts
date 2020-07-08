@@ -5,6 +5,7 @@ import RedisStore from 'connect-redis';
 import { createTypeORMConnection } from './utils/db-connection';
 import { redis } from './redis';
 import { corsOptionsDelegate } from './utils/cors';
+import { limiter } from './utils/rate-limiter';
 import { schemas } from './utils/merge-schema';
 import { warning } from './utils/warnings';
 import { DEFAULT_HOST, DEFAULT_PORT, REDIS_SESSION_PREFIX } from './constants';
@@ -27,6 +28,8 @@ if (!process.env.SESSION_SECRET) {
 }
 
 export const startServer = async (): Promise<void> => {
+  await createTypeORMConnection();
+
   const app = express();
   const server = new ApolloServer({
     schema: schemas,
@@ -52,9 +55,11 @@ export const startServer = async (): Promise<void> => {
     })
   );
 
-  server.applyMiddleware({ app, cors: corsOptionsDelegate });
+  if (process.env.NODE_ENV === 'production') {
+    app.use(limiter(redis));
+  }
 
-  await createTypeORMConnection();
+  server.applyMiddleware({ app, cors: corsOptionsDelegate });
 
   app.get('/', (_req: Request, res: Response) => {
     res.sendStatus(204);
