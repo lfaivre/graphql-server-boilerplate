@@ -6,13 +6,15 @@ import { Entity, Column, BaseEntity, PrimaryGeneratedColumn } from 'typeorm';
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid') id: string;
 
-  @Column('varchar', { length: 255 }) email: string;
+  @Column('varchar', { nullable: true, length: 255 }) email: string | null;
 
-  @Column('text') password: string;
+  @Column('text', { nullable: true }) password: string | null;
 
   @Column('boolean', { default: false }) confirmed: boolean;
 
   @Column('boolean', { default: false }) forgotPasswordLocked: boolean;
+
+  @Column('text', { nullable: true }) twitterId: string | null;
 
   // @BeforeUpdate()
   // async hashPasswordBeforeUpdate(): Promise<void> {
@@ -23,6 +25,8 @@ export class User extends BaseEntity {
 
   // @BeforeInsert()
   // async hashPasswordBeforeInsert(): Promise<void> {
-  //   this.password = await bcrypt.hash(this.password, 10);
+  //   if(this.password) {
+  //     this.password = await bcrypt.hash(this.password, 10);
+  //   }
   // }
 }

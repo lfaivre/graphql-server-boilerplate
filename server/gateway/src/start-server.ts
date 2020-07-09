@@ -2,14 +2,23 @@ import express, { Request, Response } from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import session from 'express-session';
 import RedisStore from 'connect-redis';
+import passport from 'passport';
+import { Strategy as TwitterStrategy } from 'passport-twitter';
 import { createTypeORMConnection } from './utils/db-connection';
 import { redis } from './redis';
 import { corsOptionsDelegate } from './utils/cors';
 import { limiter } from './utils/rate-limiter';
 import { schemas } from './utils/merge-schema';
 import { warning } from './utils/warnings';
-import { DEFAULT_HOST, DEFAULT_PORT, REDIS_SESSION_PREFIX } from './constants';
+import {
+  DEFAULT_HOST,
+  DEFAULT_PORT,
+  REDIS_SESSION_PREFIX,
+  TWITTER_CONSUMER_KEY,
+  TWITTER_CONSUMER_SECRET,
+} from './constants';
 import { confirmEmail } from './routes/confirm-email';
+import { User } from './entity/User';
 
 // TODO :: Move these initializations to a separate file with an export
 const hostExternal = process.env.GATEWAY_DEV_HOST_EXT || DEFAULT_HOST;
@@ -28,7 +37,7 @@ if (!process.env.SESSION_SECRET) {
 }
 
 export const startServer = async (): Promise<void> => {
-  await createTypeORMConnection();
+  const connection = await createTypeORMConnection();
 
   const app = express();
   const server = new ApolloServer({
@@ -58,6 +67,71 @@ export const startServer = async (): Promise<void> => {
   if (process.env.NODE_ENV === 'production') {
     app.use(limiter(redis));
   }
+
+  // PASSPORT
+
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  passport.use(
+    new TwitterStrategy(
+      {
+        consumerKey: TWITTER_CONSUMER_KEY(),
+        consumerSecret: TWITTER_CONSUMER_SECRET(),
+        callbackURL: 'http://localhost:4000/auth/twitter/callback',
+        includeEmail: true,
+      },
+      async (_token, _tokenSecret, profile, cb) => {
+        console.log('TWITTER PROFILE:', profile);
+        const { id, emails } = profile;
+
+        const query = await connection
+          .getRepository(User)
+          .createQueryBuilder('user')
+          .where('user.twitterId = :id', { id });
+
+        let emailFromTwitter = null;
+
+        if (emails) {
+          emailFromTwitter = emails[0].value;
+          await query.orWhere('user.email = :emailFromTwitter', { emailFromTwitter });
+        }
+
+        let user = await query.getOne();
+
+        if (!user) {
+          user = await User.create({
+            twitterId: id,
+            email: emailFromTwitter,
+          }).save();
+        } else if (!user.twitterId && user.email) {
+          user.twitterId = id;
+          await user.save();
+        } else if (user.twitterId) {
+          // @todo handle this login
+        }
+
+        return cb(null, { id: user.id });
+      }
+    )
+  );
+
+  app.get('/auth/twitter', passport.authenticate('twitter'));
+
+  app.get(
+    '/auth/twitter/callback',
+    passport.authenticate('twitter', { session: false }),
+    (req: Request, res: Response) => {
+      if (req.session && req.user) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        req.session.userId = (req.user as any).id;
+      }
+      // @todo redirect to frontend
+      res.sendStatus(200);
+    }
+  );
+
+  // END PASSPORT
 
   server.applyMiddleware({ app, cors: corsOptionsDelegate });
 

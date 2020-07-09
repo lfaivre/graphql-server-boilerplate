@@ -13,7 +13,13 @@ if (!process.env.GATEWAY_DEV_HOST) {
   console.log('NO GATEWAY_DEV_HOST ENVIRONMENT VARIABLE AVAILABLE');
 }
 
-const allowed = ['http://localhost:4000', `http://${hostExternal}`, `http://${host}`];
+const allowed = [
+  'http://localhost:4000',
+  `http://${hostExternal}`,
+  `http://${host}`,
+  'https://api.twitter.com',
+];
+
 export const corsOptionsDelegate: CorsOptionsDelegate = (req, callback) => {
   let corsOptions: CorsOptions = {
     optionsSuccessStatus: 204,
