@@ -26,6 +26,12 @@ export const resolvers: ResolverMap = {
       const { userId } = context.session;
       if (!userId) return false;
       await removeAllUserSessions(userId, context.redis);
+      context.session.destroy((err) => {
+        if (err) {
+          console.log('ERROR DESTROYING SESSION');
+        }
+      });
+
       return true;
     },
   },
